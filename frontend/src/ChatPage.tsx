@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from './contexts/UserContext';
+import ReactMarkdown from 'react-markdown';
 
 interface Message {
   id: string;
@@ -169,7 +170,11 @@ const ChatPage: React.FC = () => {
                     ? 'bg-gradient-to-r from-user-bubble-light to-zaman-green/10 dark:from-user-bubble-dark dark:to-zaman-green/20 text-user-text-light dark:text-user-text-dark rounded-xl rounded-br-none border border-zaman-green/20'
                     : 'bg-gradient-to-r from-assistant-bubble-light to-zaman-green/5 dark:from-assistant-bubble-dark dark:to-zaman-green/10 text-assistant-text-light dark:text-assistant-text-dark rounded-xl rounded-bl-none border border-zaman-green/10'
                 } px-4 py-3 max-w-[80%] shadow-sm`}>
-                  <p className="text-base leading-relaxed">{message.content}</p>
+                  <div className="text-base leading-relaxed prose prose-sm max-w-none prose-p:my-1 prose-strong:font-bold prose-em:italic">
+                    <ReactMarkdown>
+                      {message.content}
+                    </ReactMarkdown>
+                  </div>
                 </div>
               </div>
             </div>
