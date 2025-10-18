@@ -92,7 +92,7 @@ class StatementParser:
     }
     
     def __init__(self):
-        self.supported_formats = ['.csv', '.xlsx', '.xls', '.pdf']
+        self.supported_formats = ['.pdf']
     
     async def parse_statement_file(
         self, 
@@ -143,7 +143,6 @@ class StatementParser:
             full_text = ""
             for page in doc:
                 full_text += page.get_text("text")
-            
             doc.close()
 
             # Determine which PDF parser to use
@@ -159,72 +158,68 @@ class StatementParser:
             raise StatementProcessingError(f"Error parsing PDF file: {e}")
 
     def _parse_kaspi_pdf(self, text: str, user_id: UUID) -> List[Transaction]:
-        """Parse Kaspi Bank PDF statements."""
-        transactions = []
-        
-        logger.info(f"PDF text preview (first 500 chars): {text[:500]}")
-        
-        # Look for transaction section markers
-        transaction_markers = [
-            "18.10.25\n- ",
-            "17.10.25\n- ",
-            "16.10.25\n- ",
-            "15.10.25\n- ",
-            "14.10.25\n- "
+        """Парсинг PDF Kaspi Bank с полным извлечением всех транзакций"""
+        transactions: List[Transaction] = []
+
+        # --- 1. Нормализация текста ---
+        norm_text = text.replace('\xa0', ' ').replace('\r\n', '\n').replace('\r', '\n')
+        if not norm_text.endswith('\n'):
+            norm_text += '\n'
+
+        # --- 2. Удаляем всё до таблицы (заголовки, шапку) ---
+        norm_text = re.sub(
+            r"^.*?Дата\s+Сумма\s+Операция\s+Детали",
+            "Дата Сумма Операция Детали",
+            norm_text,
+            flags=re.S
+        )
+
+        # --- 3. Удаляем служебные хвосты и футеры Kaspi ---
+        footer_patterns = [
+            r"[-–]\s*Сумма\s+заблокирована[^\n]*",
+            r"Банк\s+ожидает\s+подтверждения[^\n]*",
+            r"АО\s+«?Kaspi\s+Bank»?[^\n]*",
+            r"www\.kaspi\.kz[^\n]*",
+            r"БИК\s+CASPKZKA[^\n]*",
+            r"Итого[^\n]*",
+            r"Доступно\s+на\s+\d{2}\.\d{2}\.\d{2}.*",
+            r"ВЫПИСКА[^\n]*"
         ]
-        
-        search_start = -1
-        for marker in transaction_markers:
-            search_start = text.find(marker)
-            if search_start != -1:
-                logger.info(f"Found transaction section starting with: {marker}")
-                break
-        
-        if search_start == -1:
-            pattern_search = re.search(r"\d{2}\.\d{2}\.\d{2}\n[+\-]\s[\d\s,]+\s₸\n", text)
-            if pattern_search:
-                search_start = pattern_search.start()
-                logger.info(f"Found transaction pattern at position: {search_start}")
-            else:
-                logger.warning("Could not find any transaction patterns in Kaspi PDF")
-                return []
+        for fp in footer_patterns:
+            norm_text = re.sub(fp, "", norm_text, flags=re.IGNORECASE)
 
-        search_text = text[search_start:]
-        logger.info(f"Search text preview (800 chars): {search_text[:800]}")
-
-        # Regex pattern to match transactions
+        # --- 4. Основная регулярка ---
         pattern = re.compile(
-            r"(\d{2}\.\d{2}\.\d{2})\n"
-            r"([+\-]\s[\d\s,]+\s₸)\n"
-            r"([^\n]+)\n"
-            r"([^\n\d]*?)(?=\n\d{2}\.\d{2}\.\d{2}|\n[A-ZА-Я]|$)",
+            r"(?m)"  # multiline
+            r"(\d{2}\.\d{2}\.\d{2})\s+"                    # дата
+            r"([+\-]\s*[\d\s,]+\s*₸)\s+"                   # сумма
+            r"([А-ЯA-Za-zЁёІіҢңӘәӨөҮүҚқҺһ\s\.\-]+?)\s{2,}"# операция (Покупка, Перевод, Пополнение)
+            # описание до следующей даты, футера или конца
+            r"([^\n]+?)(?=(?:\n\d{2}\.\d{2}\.\d{2}\s+[+\-]\s*[\d\s,]+\s*₸)"
+            r"|\n?\s*(?:АО|[-–]\s*Сумма|Банк\s+ожидает|www\.kaspi\.kz|БИК|Итого|Доступно|ВЫПИСКА|$))",
             re.MULTILINE
         )
 
-        matches_found = 0
-        for match in pattern.finditer(search_text):
-            matches_found += 1
-            date_str, amount_str, operation, details = match.groups()
-            
-            date_str = date_str.strip()
-            amount_str = amount_str.strip()
-            operation = operation.strip()
-            details = details.strip() if details else ""
-            
-            logger.info(f"Found transaction {matches_found}: date='{date_str}', amount='{amount_str}', operation='{operation}'")
-            
+        matches = list(pattern.finditer(norm_text))
+        logger.info(f"Found {len(matches)} transactions in Kaspi PDF")
+
+        # --- 5. Построение объектов Transaction ---
+        for idx, m in enumerate(matches, start=1):
+            date_str = m.group(1).strip()
+            amount_str = m.group(2).strip()
+            operation = m.group(3).strip()
+            details = m.group(4).strip()
+
             transaction_date = self._parse_date_kaspi(date_str)
             amount = self._parse_amount_kaspi(amount_str)
-
             if transaction_date is None or amount is None:
-                logger.warning(f"Skipping transaction due to parsing error: date={date_str}, amount={amount_str}")
+                logger.warning(f"Skipping transaction #{idx}: invalid date or amount")
                 continue
 
             transaction_type = TransactionType.INCOME if amount > 0 else TransactionType.EXPENSE
-
-            description = operation
-            if details:
-                description += f" - {details}"
+            description = f"{operation}      {details}"
+            if len(description) > 1000:
+                description = description[:1000]
 
             transactions.append(Transaction(
                 id=uuid4(),
@@ -235,38 +230,35 @@ class StatementParser:
                 description=description
             ))
 
-        logger.info(f"Parsed {len(transactions)} transactions from PDF")
-        
-        # Try simpler pattern if no transactions found
-        if len(transactions) == 0:
-            logger.info("Trying simpler parsing pattern...")
-            simple_pattern = re.compile(
-                r"(\d{2}\.\d{2}\.\d{2})\s*\n\s*([+\-]\s*[\d\s,]+\s*₸)",
-                re.MULTILINE
-            )
-            
-            for match in simple_pattern.finditer(search_text):
-                date_str, amount_str = match.groups()
-                logger.info(f"Simple pattern found: {date_str} - {amount_str}")
-                
-                transaction_date = self._parse_date_kaspi(date_str.strip())
-                amount = self._parse_amount_kaspi(amount_str.strip())
-                
-                if transaction_date and amount is not None:
-                    transaction_type = TransactionType.INCOME if amount > 0 else TransactionType.EXPENSE
-                    
-                    transactions.append(Transaction(
-                        id=uuid4(),
-                        user_id=user_id,
-                        transaction_date=transaction_date,
-                        amount=abs(amount),
-                        transaction_type=transaction_type,
-                        description="Transaction from PDF"
-                    ))
-            
-            logger.info(f"Simple pattern parsed {len(transactions)} transactions")
-        
+        logger.info(f"Parsed {len(transactions)} valid transactions from Kaspi PDF")
         return transactions
+
+
+    
+    def _extract_account_from_details(self, details: str) -> Optional[str]:
+        """Extract masked or partial account/card number from details text."""
+        match = re.search(r"(KZ\d{16,20}|[0-9]{4}\s?[0-9]{4}\s?[0-9]{4}\s?[0-9]{4})", details)
+        if match:
+            return match.group(1)
+        return None
+
+    def _extract_reference_from_details(self, details: str) -> Optional[str]:
+        """Extract reference or transaction ID if present in text."""
+        match = re.search(r"(ID|№|Reference|Референс)[^\d]*(\d{6,})", details)
+        if match:
+            return match.group(2)
+        return None
+
+    def _extract_balance_from_details(self, details: str) -> Optional[float]:
+        """Extract remaining balance (остаток) from details text."""
+        match = re.search(r"Остаток[:\s]*([\d\s,]+)\s₸", details)
+        if match:
+            try:
+                val = match.group(1).replace(" ", "").replace(",", ".")
+                return float(val)
+            except ValueError:
+                return None
+        return None
 
     def _parse_generic_pdf(self, text: str, user_id: UUID) -> List[Transaction]:
         """Generic PDF parsing for other banks."""
