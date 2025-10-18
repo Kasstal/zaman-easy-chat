@@ -81,6 +81,7 @@ class Goal(Base):
     title = Column(String, nullable=False)
     target_amount = Column(Float, nullable=False)
     current_amount = Column(Float, default=0.0)
+    monthly_contribution = Column(Float, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     
     # Relationships

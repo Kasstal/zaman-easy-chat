@@ -140,7 +140,8 @@ async def create_goal(db: AsyncSession, user_id: UUID, goal: GoalCreate) -> Goal
         user_id=str(user_id),
         title=goal.title,
         target_amount=goal.target_amount,
-        current_amount=0.0
+        current_amount=0.0,
+        monthly_contribution=goal.monthly_contribution
     )
     db.add(db_goal)
     await db.commit()
@@ -169,10 +170,27 @@ async def update_goal_progress(
     goal_id: UUID, 
     goal_update: GoalUpdate
 ) -> Optional[Goal]:
-    """Update goal progress"""
+    """Update goal progress and other fields"""
     db_goal = await get_goal(db, goal_id)
     if db_goal:
-        db_goal.current_amount = goal_update.current_amount
+        if goal_update.current_amount is not None:
+            db_goal.current_amount = goal_update.current_amount
+        if goal_update.monthly_contribution is not None:
+            db_goal.monthly_contribution = goal_update.monthly_contribution
+        if goal_update.title is not None:
+            db_goal.title = goal_update.title
+        if goal_update.target_amount is not None:
+            db_goal.target_amount = goal_update.target_amount
         await db.commit()
         await db.refresh(db_goal)
     return db_goal
+
+
+async def delete_goal(db: AsyncSession, goal_id: UUID) -> bool:
+    """Delete a goal"""
+    db_goal = await get_goal(db, goal_id)
+    if db_goal:
+        await db.delete(db_goal)
+        await db.commit()
+        return True
+    return False
