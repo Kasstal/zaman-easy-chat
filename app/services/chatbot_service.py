@@ -177,7 +177,7 @@ class ChatbotService:
     def __init__(self):
         api_key = os.getenv("OPENAI_API_KEY")
         if api_key:
-            self.client = OpenAI(api_key=api_key)
+            self.client = OpenAI(base_url="https://openai-hub.neuraldeep.tech/", api_key=api_key)
         else:
             logger.warning("OPENAI_API_KEY not set. Chatbot will use fallback responses.")
             self.client = None
