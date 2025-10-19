@@ -117,9 +117,9 @@ const ChatPage: React.FC = () => {
         <div className="flex-grow flex flex-col h-full overflow-hidden pt-6">
         <header className="sticky top-0 z-10 flex items-center bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm p-4 pb-2 justify-center">
           <div className="text-center">
-            <h1 className="text-lg font-bold text-gray-900 dark:text-white">Chat</h1>
+            <h1 className="text-lg font-bold text-gray-900 dark:text-white">ИИ Ассистент</h1>
             {user && (
-              <p className="text-xs text-gray-600 dark:text-gray-400">Welcome, {user.username}</p>
+              <p className="text-xs text-gray-600 dark:text-gray-400">Добро пожаловать, {user.username}</p>
             )}
           </div>
         </header>
@@ -128,7 +128,7 @@ const ChatPage: React.FC = () => {
           {!user && (
             <div className="bg-gradient-to-r from-zaman-green/10 to-zaman-solar/10 border border-zaman-green/20 rounded-lg p-4 text-center">
               <p className="text-zaman-green dark:text-zaman-green font-medium">
-                👋 Please create a user account in the Goals tab to get started!
+                👋 Пожалуйста, создайте учетную запись пользователя на вкладке Цели, чтобы начать!
               </p>
             </div>
           )}
@@ -140,7 +140,7 @@ const ChatPage: React.FC = () => {
                   <path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Z" opacity="0.2"></path>
                   <path d="M232,128a104,104,0,0,1-208,0c0-41,23.81-78.36,60.66-95.27a8,8,0,0,1,6.68,14.54C60.15,61.59,40,93.27,40,128a88,88,0,0,0,176,0c0-34.73-20.15-66.41-51.34-80.73a8,8,0,0,1,6.68-14.54C208.19,49.64,232,87,232,128Z"></path>
                 </svg>
-                <span>Loading chat history...</span>
+                <span>Загружаем историю чата...</span>
               </div>
             </div>
           )}
@@ -151,7 +151,7 @@ const ChatPage: React.FC = () => {
                 AI
               </div>
               <p className="text-subtle-light dark:text-subtle-dark">
-                Welcome! I'm your AI banking assistant. How can I help you today?
+                Привет! Я ваш AI банковский ассистент. Чем я могу вам помочь сегодня?
               </p>
             </div>
           )}
@@ -186,7 +186,7 @@ const ChatPage: React.FC = () => {
           <div className="flex-1 relative">
             <input 
               className="form-input w-full resize-none overflow-hidden rounded-full h-12 pl-5 pr-12 text-base font-normal leading-normal bg-input-bg-light dark:bg-input-bg-dark text-input-text-light dark:text-input-text-dark placeholder:text-input-placeholder-light dark:placeholder:text-input-placeholder-dark border-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50" 
-              placeholder={user ? "Type a message..." : "Please create a user account first..."}
+              placeholder={user ? "Введите сообщение..." : "Пожалуйста, создайте учетную запись пользователя..."}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyPress={handleKeyPress}
@@ -220,7 +220,7 @@ const ChatPage: React.FC = () => {
               <svg fill="currentColor" height="24" viewBox="0 0 256 256" width="24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M216,80H184V48a16,16,0,0,0-16-16H40A16,16,0,0,0,24,48V176a8,8,0,0,0,13,6.22L72,154V184a16,16,0,0,0,16,16h93.59L219,230.22a8,8,0,0,0,5,1.78,8,8,0,0,0,8-8V96A16,16,0,0,0,216,80ZM66.55,137.78,40,159.25V48H168v88H71.58A8,8,0,0,0,66.55,137.78ZM216,207.25l-26.55-21.47a8,8,0,0,0-5-1.78H88V152h80a16,16,0,0,0,16-16V96h32Z"></path>
               </svg>
-              <span className="text-xs font-bold">Chat</span>
+              <span className="text-xs font-bold">Чат</span>
             </button>
             <button 
               onClick={() => navigate('/goals')}
@@ -229,7 +229,7 @@ const ChatPage: React.FC = () => {
               <svg fill="currentColor" height="24" viewBox="0 0 256 256" width="24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M232,64H208V56a16,16,0,0,0-16-16H64A16,16,0,0,0,48,56v8H24A16,16,0,0,0,8,80V96a40,40,0,0,0,40,40h3.65A80.13,80.13,0,0,0,120,191.61V216H96a8,8,0,0,0,0,16h64a8,8,0,0,0,0-16H136V191.58c31.94-3.23,58.44-25.64,68.08-55.58H208a40,40,0,0,0,40-40V80A16,16,0,0,0,232,64ZM48,120A24,24,0,0,1,24,96V80H48v32q0,4,.39,8ZM232,96a24,24,0,0,1-24,24h-.5a81.81,81.81,0,0,0,.5-8.9V80h24Z"></path>
               </svg>
-              <span className="text-xs font-medium">Goals</span>
+              <span className="text-xs font-medium">Цели</span>
             </button>
           </nav>
         </div>

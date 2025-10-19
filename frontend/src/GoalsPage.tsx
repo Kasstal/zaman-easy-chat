@@ -180,7 +180,11 @@ const GoalsPage: React.FC = () => {
 
       if (response.ok) {
         const data: UploadResponse = await response.json();
-        setUploadStatus(`✅ Successfully uploaded! ${data.transactions_count} transactions processed.`);
+        if (data.transactions_count === 0) {
+          setUploadStatus('❌ No transactions were found in the uploaded file.');
+        } else {
+          setUploadStatus(`✅ Successfully uploaded! ${data.transactions_count} transactions processed.`);
+        }
       } else {
         const errorData = await response.json();
         setUploadStatus(`❌ Upload failed: ${errorData.detail || 'Unknown error'}`);
@@ -207,7 +211,7 @@ const GoalsPage: React.FC = () => {
       <main className="flex-1 overflow-y-auto p-6 space-y-8 pt-8">
         <header className="flex items-center justify-between">
           <div className="w-7"></div>
-          <h1 className="text-xl font-bold text-text-light dark:text-text-dark">My Goals</h1>
+          <h1 className="text-xl font-bold text-text-light dark:text-text-dark">Мои цели</h1>
           {user && (
             <button 
               onClick={handleFileSelect}
@@ -235,7 +239,7 @@ const GoalsPage: React.FC = () => {
         {/* User Management Section */}
         {!user ? (
           <section className="bg-gradient-to-r from-surface-light to-zaman-green/5 dark:from-surface-dark dark:to-zaman-green/10 p-6 rounded-lg shadow-soft border border-zaman-green/20">
-            <h2 className="text-lg font-bold text-text-light dark:text-text-dark mb-4">Welcome! Please create your account</h2>
+            <h2 className="text-lg font-bold text-text-light dark:text-text-dark mb-4">Добро пожаловать! Пожалуйста, создайте свою учетную запись</h2>
             <div className="flex gap-3">
               <input
                 type="text"
@@ -258,7 +262,7 @@ const GoalsPage: React.FC = () => {
           <section className="bg-gradient-to-r from-surface-light to-zaman-green/5 dark:from-surface-dark dark:to-zaman-green/10 p-4 rounded-lg shadow-soft border border-zaman-green/20">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-subtle-light dark:text-subtle-dark">Logged in as</p>
+                <p className="text-sm text-subtle-light dark:text-subtle-dark">Выполнен вход как</p>
                 <p className="font-semibold text-text-light dark:text-text-dark">{user.username}</p>
                 <p className="text-xs text-subtle-light dark:text-subtle-dark">ID: {user.id}</p>
               </div>
@@ -266,7 +270,7 @@ const GoalsPage: React.FC = () => {
                 onClick={() => setUser(null)}
                 className="text-subtle-light dark:text-subtle-dark hover:text-text-light dark:hover:text-text-dark text-sm"
               >
-                Switch User
+                Сменить пользователя
               </button>
             </div>
           </section>
@@ -286,20 +290,20 @@ const GoalsPage: React.FC = () => {
         {user && (
           <>
             <section>
-              <h2 className="text-2xl font-bold text-text-light dark:text-text-dark mb-4">Savings Goals</h2>
+              <h2 className="text-2xl font-bold text-text-light dark:text-text-dark mb-4">Сберегательные цели</h2>
           <div className="space-y-4">
             {isLoadingGoals ? (
               <div className="text-center py-8 text-subtle-light dark:text-subtle-dark">
-                Loading your goals...
+                Загружаю ваши цели...
               </div>
             ) : savingsGoals.length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-subtle-light dark:text-subtle-dark mb-4">You haven't created any goals yet</p>
+                <p className="text-subtle-light dark:text-subtle-dark mb-4">У вас еще нет созданных целей</p>
                 <button
                   onClick={() => setShowCreateGoalModal(true)}
                   className="px-6 py-3 bg-zaman-gradient text-gray-800 font-semibold rounded-lg shadow-md hover:shadow-lg transition-shadow"
                 >
-                  Create Your First Goal
+                  Добавьте свою первую цель
                 </button>
               </div>
             ) : (
@@ -315,7 +319,7 @@ const GoalsPage: React.FC = () => {
                       <div className="flex justify-between items-baseline mb-1">
                         <p className="font-semibold text-text-light dark:text-text-dark">{goal.title}</p>
                         <p className="text-sm font-medium text-text-light dark:text-text-dark">
-                          ${goal.current_amount.toLocaleString()} / <span className="text-subtle-light dark:text-subtle-dark">${goal.target_amount.toLocaleString()}</span>
+                          ₸{goal.current_amount.toLocaleString()} / <span className="text-subtle-light dark:text-subtle-dark">₸{goal.target_amount.toLocaleString()}</span>
                         </p>
                       </div>
                       <div className="w-full bg-gradient-to-r from-background-light-goals to-zaman-solar/10 dark:from-background-dark-goals dark:to-zaman-green/10 rounded-full h-2.5 border border-zaman-green/5">
@@ -325,8 +329,8 @@ const GoalsPage: React.FC = () => {
                         ></div>
                       </div>
                       <div className="mt-2 text-xs text-subtle-light dark:text-subtle-dark flex justify-between">
-                        <span>Monthly: ${goal.monthly_contribution.toLocaleString()}</span>
-                        <span>{goal.months_to_complete} months remaining</span>
+                        <span>Ежемесячно: ₸{goal.monthly_contribution.toLocaleString()}</span>
+                        <span>{goal.months_to_complete} месяцев осталось</span>
                       </div>
                     </div>
                   </div>
@@ -340,19 +344,19 @@ const GoalsPage: React.FC = () => {
                   onClick={() => setShowCreateGoalModal(true)}
                   className="px-6 py-3 bg-zaman-gradient text-gray-800 font-semibold rounded-lg shadow-md hover:shadow-lg transition-shadow"
                 >
-                  + Add Goal
+                  + Добавить цель
                 </button>
               </div>
             )}
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-text-light dark:text-text-dark mb-4">Spending & Savings</h2>
+            <h2 className="text-2xl font-bold text-text-light dark:text-text-dark mb-4">Траты и Сбережения</h2>
           <div className="bg-gradient-to-r from-surface-light to-zaman-green/10 dark:from-surface-dark dark:to-zaman-green/15 p-4 rounded-lg shadow-soft space-y-4 border border-zaman-green/10">
             <div>
-              <p className="text-sm text-subtle-light dark:text-subtle-dark">Spending Trend</p>
+              <p className="text-sm text-subtle-light dark:text-subtle-dark">Тренд Расходов</p>
               <div className="flex items-baseline gap-2">
-                <p className="text-3xl font-bold text-text-light dark:text-text-dark">$2,500</p>
+                <p className="text-3xl font-bold text-text-light dark:text-text-dark">₸275,500</p>
                 <p className="text-sm font-semibold text-negative-light dark:text-negative-dark">-12%</p>
               </div>
             </div>
@@ -373,9 +377,9 @@ const GoalsPage: React.FC = () => {
           
           <div className="bg-gradient-to-r from-surface-light to-zaman-green/10 dark:from-surface-dark dark:to-zaman-green/15 p-4 mt-4 rounded-lg shadow-soft space-y-4 border border-zaman-green/10">
             <div>
-              <p className="text-sm text-subtle-light dark:text-subtle-dark">Savings Trend</p>
+              <p className="text-sm text-subtle-light dark:text-subtle-dark">Тренд Сбережений</p>
               <div className="flex items-baseline gap-2">
-                <p className="text-3xl font-bold text-text-light dark:text-text-dark">$1,800</p>
+                <p className="text-3xl font-bold text-text-light dark:text-text-dark">₸18,800</p>
                 <p className="text-sm font-semibold text-positive-light dark:text-positive-dark">+8%</p>
               </div>
             </div>
@@ -399,7 +403,7 @@ const GoalsPage: React.FC = () => {
               </svg>
               <div className="text-center">
                 <p className="text-2xl font-bold text-text-light dark:text-text-dark">70%</p>
-                <p className="text-sm text-subtle-light dark:text-subtle-dark">Saved</p>
+                <p className="text-sm text-subtle-light dark:text-subtle-dark">Собрано</p>
               </div>
             </div>
           </div>
@@ -413,45 +417,45 @@ const GoalsPage: React.FC = () => {
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
           <div className="bg-surface-light dark:bg-surface-dark rounded-2xl shadow-2xl max-w-md w-full p-6 border-2 border-zaman-green/20">
             <h3 className="text-2xl font-bold text-text-light dark:text-text-dark mb-4 text-center">
-              Create New Goal 🎯
+              Создай Новую Цель 🎯
             </h3>
             
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-subtle-light dark:text-subtle-dark mb-2">
-                  Goal Title
+                  Название цели
                 </label>
                 <input
                   type="text"
                   value={newGoal.title}
                   onChange={(e) => setNewGoal({ ...newGoal, title: e.target.value })}
-                  placeholder="e.g. Dream Home, Vacation"
+                  placeholder="Например Дом мечты, Путешествие в Италию"
                   className="w-full px-4 py-3 rounded-lg bg-background-light-goals dark:bg-background-dark-goals border border-zaman-green/20 text-text-light dark:text-text-dark placeholder-subtle-light dark:placeholder-subtle-dark focus:outline-none focus:ring-2 focus:ring-zaman-green"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-subtle-light dark:text-subtle-dark mb-2">
-                  Target Amount ($)
+                  Целевая сумма (₸)
                 </label>
                 <input
                   type="number"
                   value={newGoal.target_amount}
                   onChange={(e) => setNewGoal({ ...newGoal, target_amount: e.target.value })}
-                  placeholder="e.g. 15000"
+                  placeholder="e.g. 125 000₸"
                   className="w-full px-4 py-3 rounded-lg bg-background-light-goals dark:bg-background-dark-goals border border-zaman-green/20 text-text-light dark:text-text-dark placeholder-subtle-light dark:placeholder-subtle-dark focus:outline-none focus:ring-2 focus:ring-zaman-green"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-subtle-light dark:text-subtle-dark mb-2">
-                  Monthly Contribution ($)
+                  Ежемесячный взнос (₸)
                 </label>
                 <input
                   type="number"
                   value={newGoal.monthly_contribution}
                   onChange={(e) => setNewGoal({ ...newGoal, monthly_contribution: e.target.value })}
-                  placeholder="e.g. 500"
+                  placeholder="e.g. 15 000₸"
                   className="w-full px-4 py-3 rounded-lg bg-background-light-goals dark:bg-background-dark-goals border border-zaman-green/20 text-text-light dark:text-text-dark placeholder-subtle-light dark:placeholder-subtle-dark focus:outline-none focus:ring-2 focus:ring-zaman-green"
                 />
               </div>
@@ -471,14 +475,14 @@ const GoalsPage: React.FC = () => {
                   }}
                   className="flex-1 px-4 py-3 bg-surface-light dark:bg-surface-dark border-2 border-zaman-green/30 text-text-light dark:text-text-dark font-semibold rounded-lg hover:bg-zaman-green/10 transition-colors"
                 >
-                  Cancel
+                  Отмена
                 </button>
                 <button
                   onClick={createGoalHandler}
                   disabled={isCreatingGoal}
                   className="flex-1 px-4 py-3 bg-zaman-gradient text-gray-800 font-semibold rounded-lg shadow-md hover:shadow-lg transition-shadow disabled:opacity-50"
                 >
-                  {isCreatingGoal ? 'Creating...' : 'Create Goal'}
+                  {isCreatingGoal ? 'Создание...' : 'Создать цель'}
                 </button>
               </div>
             </div>
@@ -495,13 +499,13 @@ const GoalsPage: React.FC = () => {
             <svg fill="currentColor" height="24" viewBox="0 0 256 256" width="24" xmlns="http://www.w3.org/2000/svg">
               <path d="M216,80H184V48a16,16,0,0,0-16-16H40A16,16,0,0,0,24,48V176a8,8,0,0,0,13,6.22L72,154V184a16,16,0,0,0,16,16h93.59L219,230.22a8,8,0,0,0,5,1.78,8,8,0,0,0,8-8V96A16,16,0,0,0,216,80ZM66.55,137.78,40,159.25V48H168v88H71.58A8,8,0,0,0,66.55,137.78ZM216,207.25l-26.55-21.47a8,8,0,0,0-5-1.78H88V152h80a16,16,0,0,0,16-16V96h32Z"></path>
             </svg>
-            <span className="text-xs font-medium">Chat</span>
+            <span className="text-xs font-medium">Чат</span>
           </button>
           <button className="flex flex-col items-center justify-center gap-1 p-2 rounded-lg bg-zaman-gradient text-gray-800 w-24 shadow-lg">
             <svg fill="currentColor" height="24" viewBox="0 0 256 256" width="24" xmlns="http://www.w3.org/2000/svg">
               <path d="M232,64H208V56a16,16,0,0,0-16-16H64A16,16,0,0,0,48,56v8H24A16,16,0,0,0,8,80V96a40,40,0,0,0,40,40h3.65A80.13,80.13,0,0,0,120,191.61V216H96a8,8,0,0,0,0,16h64a8,8,0,0,0,0-16H136V191.58c31.94-3.23,58.44-25.64,68.08-55.58H208a40,40,0,0,0,40-40V80A16,16,0,0,0,232,64ZM48,120A24,24,0,0,1,24,96V80H48v32q0,4,.39,8ZM232,96a24,24,0,0,1-24,24h-.5a81.81,81.81,0,0,0,.5-8.9V80h24Z"></path>
             </svg>
-            <span className="text-xs font-bold">Goals</span>
+            <span className="text-xs font-bold">Цели</span>
           </button>
         </nav>
       </footer>

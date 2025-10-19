@@ -220,8 +220,7 @@ class ChatbotService:
         """
         if not self.client:
             return (
-                f"I received your message: '{user_message}'. "
-                f"Please set OPENAI_API_KEY to enable full AI features."
+               "⚠️ Chatbot service is not currently available."
             )
 
         # Build conversation history (last 10 messages)
