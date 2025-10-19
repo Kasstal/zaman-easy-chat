@@ -177,7 +177,7 @@ const GoalsPage: React.FC = () => {
       if (response.ok) {
         const userData = await response.json();
         setUser(userData);
-        setUploadStatus(`✅ User created successfully! Welcome, ${userData.username}!`);
+        setUploadStatus(`✅ Пользователь успешно создан, ${userData.username}!`);
         setUsername(''); // Clear the input
         setTimeout(() => {
           setShowCreateGoalModal(true);
@@ -185,11 +185,11 @@ const GoalsPage: React.FC = () => {
         }, 1500);
       } else {
         const errorData = await response.json();
-        setUploadStatus(`❌ User creation failed: ${errorData.detail || 'Unknown error'}`);
+        setUploadStatus(`❌ Создание пользователя не удалось: ${errorData.detail || 'Неизвестная ошибка'}`);
       }
     } catch (error) {
-      setUploadStatus('❌ Network error. Please check if the backend is running.');
-      console.error('User creation error:', error);
+      setUploadStatus('❌ Сетевая ошибка. Пожалуйста, проверьте, работает ли сервер.');
+      console.error('Ошибка создания пользователя:', error);
     } finally {
       // This ensures the button is re-enabled even if there's an error
       setIsCreatingUser(false);
@@ -201,7 +201,7 @@ const GoalsPage: React.FC = () => {
     if (!file) return;
 
     if (!user) {
-      setUploadStatus('❌ Please create a user first before uploading statements.');
+      setUploadStatus('❌ Пожалуйста, создайте пользователя перед загрузкой выписок.');
       return;
     }
 
@@ -220,17 +220,17 @@ const GoalsPage: React.FC = () => {
       if (response.ok) {
         const data: UploadResponse = await response.json();
         if (data.transactions_count === 0) {
-          setUploadStatus('❌ No transactions were found in the uploaded file.');
+          setUploadStatus('❌ В загруженном файле не найдено ни одной транзакции.');
         } else {
-          setUploadStatus(`✅ Successfully uploaded! ${data.transactions_count} transactions processed.`);
+          setUploadStatus(`✅ Успешно загружено! Обработано ${data.transactions_count} транзакций.`);
         }
       } else {
         const errorData = await response.json();
-        setUploadStatus(`❌ Upload failed: ${errorData.detail || 'Unknown error'}`);
+        setUploadStatus(`❌ Ошибка загрузки: ${errorData.detail || 'Неизвестная ошибка'}`);
       }
     } catch (error) {
-      setUploadStatus('❌ Network error. Please check if backend is running.');
-      console.error('Upload error:', error);
+      setUploadStatus('❌ Сетевая ошибка. Пожалуйста, попробуйте еще раз позже.');
+      console.error('Ошибка загрузки:', error);
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) {
